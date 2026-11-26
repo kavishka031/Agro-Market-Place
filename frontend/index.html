@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>අස්වැන්න Direct | Full-Stack Agro-Marketplace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Noto Sans Sinhala', sans-serif; }</style>
+</head>
+<body class="bg-stone-100 text-stone-800">
+
+    <!-- Navbar -->
+    <nav class="bg-emerald-800 text-white p-4 shadow-md">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">🌾 අස්වැන්න Direct (25 Districts Live)</h1>
+            <div class="space-x-2">
+                <button onclick="switchTab('market')" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 rounded text-sm font-semibold">වෙළඳපොළ (Buyer)</button>
+                <button onclick="switchTab('farmer')" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded text-sm font-semibold">ගොවි පුවරුව (Farmer)</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto p-6">
+        
+        <!-- BUYER SECTION -->
+        <section id="market-section">
+            <div class="flex flex-wrap gap-3 mb-6 items-center justify-between bg-white p-4 rounded-xl shadow-sm">
+                <div class="flex gap-3">
+                    <select id="filter-district" onchange="renderListings()" class="border p-2 rounded-lg text-sm">
+                        <option value="ALL">සියලුම දිස්ත්‍රික්ක (25)</option>
+                    </select>
+                    <select id="filter-category" onchange="renderListings()" class="border p-2 rounded-lg text-sm">
+                        <option value="ALL">සියලුම බෝග (වී / එළවළු / පළතුරු)</option>
+                        <option value="PADDY">🌾 වී සහ සහල් (Paddy)</option>
+                        <option value="VEGETABLE">🥦 එළවළු (Vegetables)</option>
+                        <option value="FRUIT">🍌 පළතුරු (Fruits)</option>
+                    </select>
+                </div>
+                <div class="text-sm text-emerald-700 font-semibold" id="connection-status">🔄 Database සමඟ සම්බන්ධ වෙමින්...</div>
+            </div>
+
+            <!-- Crop Cards Grid -->
+            <div id="listings-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"></div>
+
+            <!-- Orders History -->
+            <div class="bg-white p-5 rounded-xl shadow-sm">
+                <h2 class="font-bold text-lg mb-3">📦 මගේ පෙර-ඇණවුම් (Pre-Orders from Database)</h2>
+                <div id="orders-list" class="space-y-2 text-sm"></div>
+            </div>
+        </section>
+
+        <!-- FARMER SECTION -->
+        <section id="farmer-section" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm">
+                <h2 class="font-bold text-lg mb-4 text-emerald-800">➕ නව අස්වැන්නක් ලියාපදිංචි කරන්න</h2>
+                <form onsubmit="addCrop(event)" class="space-y-3 text-sm">
+                    <div>
+                        <label class="block font-semibold mb-1">දිස්ත්‍රික්කය</label>
+                        <select id="farmer-district" required class="w-full border p-2 rounded-lg"></select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">බෝග වර්ගය</label>
+                        <select id="farmer-category" class="w-full border p-2 rounded-lg">
+                            <option value="PADDY">වී (Paddy)</option>
+                            <option value="VEGETABLE">එළවළු (Vegetable)</option>
+                            <option value="FRUIT">පළතුරු (Fruit)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">බෝගයේ නම (උදා: කීරි සම්බා වී)</label>
+                        <input type="text" id="farmer-crop-name" required class="w-full border p-2 rounded-lg">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-semibold mb-1">ගොවිපළ මිල (රු./kg)</label>
+                            <input type="number" id="farmer-price" required class="w-full border p-2 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1">වෙළඳපොළ මිල (රු./kg)</label>
+                            <input type="number" id="market-price" required class="w-full border p-2 rounded-lg">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-semibold mb-1">ප්‍රමාණය (kg)</label>
+                            <input type="number" id="farmer-qty" required class="w-full border p-2 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1">අස්වනු නෙළන දිනය</label>
+                            <input type="date" id="farmer-date" required class="w-full border p-2 rounded-lg">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-700 text-white py-2.5 rounded-lg font-bold hover:bg-emerald-800">
+                        Database එකට ඇතුළත් කරන්න
+                    </button>
+                </form>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm">
+                <h2 class="font-bold text-lg mb-4 text-amber-800">⚡ අස්වනු නාස්තිය වැළැක්වීම (Statechart Control)</h2>
+                <div id="farmer-listings" class="space-y-3 text-sm"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let allListings = [];
+
+        async function init() {
+            try {
+                // 1. Load Districts
+                const distRes = await fetch(`${API_URL}/districts`);
+                const districts = await distRes.json();
+                const filterSelect = document.getElementById('filter-district');
+                const farmerSelect = document.getElementById('farmer-district');
+                
+                districts.forEach(d => {
+                    filterSelect.innerHTML += `<option value="${d.id}">${d.name_si} (${d.province})</option>`;
+                    farmerSelect.innerHTML += `<option value="${d.id}">${d.name_si}</option>`;
+                });
+
+                document.getElementById('connection-status').innerText = '🟢 MySQL Database සම්බන්ධයි';
+                await loadListings();
+                await loadOrders();
+            } catch (err) {
+                document.getElementById('connection-status').innerText = '🔴 Backend Server ක්‍රියාත්මක නැත!';
+            }
+        }
+
+        async function loadListings() {
+            const res = await fetch(`${API_URL}/listings`);
+            allListings = await res.json();
+            renderListings();
+            renderFarmerListings();
+        }
+
+        function renderListings() {
+            const distFilter = document.getElementById('filter-district').value;
+            const catFilter = document.getElementById('filter-category').value;
+            const grid = document.getElementById('listings-grid');
+            grid.innerHTML = '';
+
+            const filtered = allListings.filter(item => {
+                return (distFilter === 'ALL' || item.district_id == distFilter) &&
+                       (catFilter === 'ALL' || item.category === catFilter);
+            });
+
+            filtered.forEach(item => {
+                const saving = item.market_price - item.farm_price;
+                grid.innerHTML += `
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-stone-200 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between text-xs mb-2">
+                                <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold">${item.district_name}</span>
+                                <span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold">${item.status}</span>
+                            </div>
+                            <h3 class="font-bold text-lg">${item.crop_name}</h3>
+                            <p class="text-xs text-stone-500 mb-3">ගොවි මහතා: ${item.farmer_name} | තොග: ${item.available_qty_kg} kg</p>
+                            <div class="bg-stone-50 p-3 rounded-lg mb-4">
+                                <div class="text-xl font-bold text-emerald-700">රු. ${item.farm_price} <span class="text-xs font-normal">/ kg</span></div>
+                                <div class="text-xs text-stone-500 line-through">වෙළඳපොළ මිල: රු. ${item.market_price}</div>
+                                <div class="text-xs text-emerald-600 font-semibold mt-1">1kg කින් ඉතිරිය: රු. ${saving.toFixed(2)}</div>
+                            </div>
+                        </div>
+                        <button onclick="placeOrder(${item.id})" ${item.available_qty_kg <= 0 ? 'disabled' : ''} 
+                            class="w-full bg-emerald-700 hover:bg-emerald-800 disabled:bg-stone-400 text-white py-2 rounded-lg text-sm font-semibold">
+                            ${item.available_qty_kg > 0 ? 'Pre-Order කරන්න (10 kg)' : 'Sold Out'}
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        async function placeOrder(listingId) {
+            const res = await fetch(`${API_URL}/orders`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ listing_id: listingId, buyer_id: 2, quantity_kg: 10 })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            await loadListings();
+            await loadOrders();
+        }
+
+        async function loadOrders() {
+            const res = await fetch(`${API_URL}/orders`);
+            const orders = await res.json();
+            const list = document.getElementById('orders-list');
+            list.innerHTML = orders.map(o => `
+                <div class="p-3 bg-stone-50 rounded-lg flex justify-between border">
+                    <span><b>#${o.id} - ${o.crop_name}</b> (${o.district_name}) | ${o.quantity_kg} kg</span>
+                    <span class="font-bold text-emerald-700">රු. ${o.total_price} [${o.order_status}]</span>
+                </div>
+            `).join('');
+        }
+
+        async function addCrop(e) {
+            e.preventDefault();
+            const payload = {
+                farmer_id: 1,
+                district_id: document.getElementById('farmer-district').value,
+                category: document.getElementById('farmer-category').value,
+                crop_name: document.getElementById('farmer-crop-name').value,
+                farm_price: document.getElementById('farmer-price').value,
+                market_price: document.getElementById('market-price').value,
+                available_qty_kg: document.getElementById('farmer-qty').value,
+                harvest_date: document.getElementById('farmer-date').value
+            };
+
+            const res = await fetch(`${API_URL}/listings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            alert(data.message);
+            e.target.reset();
+            await loadListings();
+        }
+
+        function renderFarmerListings() {
+            const container = document.getElementById('farmer-listings');
+            container.innerHTML = allListings.map(item => `
+                <div class="p-3 border rounded-lg flex justify-between items-center">
+                    <div>
+                        <div class="font-bold">${item.crop_name} (${item.district_name})</div>
+                        <div class="text-xs text-stone-500">මිල: රු.${item.farm_price} | තත්ත්වය: ${item.status}</div>
+                    </div>
+                    ${item.status === 'PRE_HARVEST' ? 
+                        `<button onclick="triggerSurplus(${item.id})" class="bg-amber-600 text-white px-3 py-1 rounded text-xs font-bold">Surplus (-20%)</button>` 
+                        : `<span class="text-xs font-bold text-emerald-700">Active</span>`}
+                </div>
+            `).join('');
+        }
+
+        async function triggerSurplus(id) {
+            const res = await fetch(`${API_URL}/listings/${id}/surplus`, { method: 'PUT' });
+            const data = await res.json();
+            alert(data.message);
+            await loadListings();
+        }
+
+        function switchTab(tab) {
+            document.getElementById('market-section').classList.toggle('hidden', tab !== 'market');
+            document.getElementById('farmer-section').classList.toggle('hidden', tab !== 'farmer');
+        }
+
+        init();
+    </script>
+</body>
+</html>
